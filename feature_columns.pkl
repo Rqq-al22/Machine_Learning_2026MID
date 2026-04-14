@@ -1,1 +1,0 @@
-list(df_encoded.columns)

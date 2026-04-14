@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""ML_CLUSTERING.ipyb - Model Clustering Functions"""
+"""
+ML_CLUSTERING.ipyb - Model Clustering Functions
+"""
 
 import pandas as pd
 import numpy as np
@@ -15,7 +17,7 @@ class WellnessClustering:
     
     def __init__(self, file_path=None, df=None, sep=';'):
         if df is not None:
-            self.df = df
+            self.df = df.copy()
         elif file_path is not None:
             self.df = pd.read_csv(file_path, sep=sep)
         else:
@@ -74,6 +76,9 @@ class WellnessClustering:
     
     def kmeans_elbow_method(self, k_range=range(2, 11)):
         """Calculate WCSS for elbow method"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         wcss = []
         for k in k_range:
             kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
@@ -83,6 +88,9 @@ class WellnessClustering:
     
     def kmeans_silhouette_scores(self, k_range=range(2, 11)):
         """Calculate silhouette scores for different k values"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         scores = []
         for k in k_range:
             kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
@@ -93,6 +101,9 @@ class WellnessClustering:
     
     def run_kmeans(self, n_clusters=4):
         """Run K-Means clustering"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
         labels = kmeans.fit_predict(self.df_scaled)
         self.df['cluster_kmeans'] = labels
@@ -101,6 +112,9 @@ class WellnessClustering:
     
     def run_agglomerative(self, n_clusters=2, linkage='average'):
         """Run Agglomerative clustering"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         agg = AgglomerativeClustering(n_clusters=n_clusters, linkage=linkage)
         labels = agg.fit_predict(self.df_scaled)
         self.df['cluster_agglomerative'] = labels
@@ -109,6 +123,9 @@ class WellnessClustering:
     
     def find_best_agglomerative(self):
         """Find best parameters for Agglomerative clustering"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         k_range = range(2, 11)
         linkage_methods = ['ward', 'complete', 'average']
         best_score = -1
@@ -132,6 +149,9 @@ class WellnessClustering:
     
     def run_dbscan(self, eps=0.4, min_samples=10):
         """Run DBSCAN clustering"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         dbscan = DBSCAN(eps=eps, min_samples=min_samples)
         labels = dbscan.fit_predict(self.df_scaled)
         self.df['cluster_dbscan'] = labels
@@ -149,6 +169,9 @@ class WellnessClustering:
     
     def find_best_dbscan(self):
         """Find best parameters for DBSCAN"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         eps_range = np.arange(0.3, 1.6, 0.1)
         min_samples_range = range(3, 11)
         best_score = -1
@@ -176,6 +199,9 @@ class WellnessClustering:
     
     def plot_pca_clusters(self, cluster_labels, title="Clustering Results"):
         """Plot PCA visualization of clusters"""
+        if self.df_scaled is None:
+            self.scale_features()
+        
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(self.df_scaled)
         df_pca = pd.DataFrame(df_pca, columns=['PC1', 'PC2'])
@@ -197,9 +223,16 @@ class WellnessClustering:
         features = self.selected_features + ['mental_wellness_index_0_100']
         return self.df.groupby(cluster_col)[features].mean().round(2)
 
+
 # Jika dijalankan sebagai script utama
 if __name__ == "__main__":
     # Contoh penggunaan
-    wc = WellnessClustering(file_path='/content/drive/MyDrive/ML_MID/wellnes1.csv')
-    print("Data loaded successfully!")
-    print(f"Shape: {wc.df.shape}")
+    try:
+        wc = WellnessClustering(file_path='data/wellnes1.csv')
+        print("✅ Data loaded successfully!")
+        print(f"📊 Shape: {wc.df.shape}")
+        print(f"📋 Columns: {list(wc.df.columns)}")
+    except FileNotFoundError:
+        print("❌ File not found. Please check the path.")
+    except Exception as e:
+        print(f"❌ Error: {e}")

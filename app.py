@@ -11,7 +11,13 @@ from scipy.spatial.distance import cdist
 # Lalu memuatnya. Untuk demonstrasi, kita akan melatih ulang di sini.
 
 # Memuat ulang data awal untuk mendapatkan fitur yang dipilih (df_selected)
-df_original = pd.read_csv('wellnes1.csv', sep=';')
+import os
+import pandas as pd
+
+base_dir = os.path.dirname(__file__)
+file_path = os.path.join(base_dir, 'wellnes1.csv')
+
+df_original = pd.read_csv(file_path, sep=';')
 selected_features = ['stress_level_0_10', 'productivity_0_100', 'sleep_quality_1_5', 'screen_time_hours']
 all_features_for_comparison = selected_features + ['mental_wellness_index_0_100']
 
